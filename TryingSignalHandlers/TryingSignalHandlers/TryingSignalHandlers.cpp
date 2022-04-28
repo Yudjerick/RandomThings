@@ -1,30 +1,50 @@
 ﻿#include <iostream>
-#define TYPE_SIGNAL(a) void (B::*a) ()
-#define FOR(n) for(int i = 0; i < n; i++)
+#define TYPE_HANDLER(a) void (Transceiver::*a) (string s)
+#define TYPE_SIGNAL(a) void (Transceiver::*a) (TYPE_HANDLER(h),string s)
 using namespace std;
 
-class B
+/*struct Connection
 {
-public:
-    void handler() {
-        cout << "handler called";
-    }
-};
+    Transceiver* connected;
+    TYPE_SIGNAL(signal);
+    TYPE_HANDLER(handler);
+};*/
 
-class A 
+class Transceiver
 {
 public:
-    B* b;
-    void signal(TYPE_SIGNAL(a)) {
-        cout << "signal called";
-        (b->*a)();
+    string name;
+    Transceiver* connected;
+    Transceiver(string s) 
+    {
+        name = s;
+    }
+
+    void signal1(TYPE_HANDLER(a), string msg) 
+    {
+        cout << "signal 1 called on " << name << endl;
+        (connected->*a)(msg);
+    }
+    void signal2(TYPE_HANDLER(a), string msg) 
+    {
+        cout << "signal 2 called on " << name << endl;
+        (connected->*a)(msg);
+    }
+
+    void handler1(string s) {
+        cout << "handler 1 called on "<< name << " message: " << s << endl;
+    }
+    void handler2(string s) {
+        cout << "handler 2 called on " << name << " message: " << s << endl;
     }
 };
 
 int main()
 {
-    A* obj1 = new A;
-    B* obj2 = new B;
-    obj1->b = obj2;
-    obj1->signal(&B::handler);
+    Transceiver A("A");
+    Transceiver B("B");
+    A.connected = &B;
+    B.connected = &B;
+    A.signal1(&Transceiver::handler2, "HELLO");
+    B.signal2(&Transceiver::handler1, "HI");
 }
